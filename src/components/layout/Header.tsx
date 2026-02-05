@@ -13,6 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
     onToggleSidebar?: () => void;
@@ -30,12 +31,12 @@ export function Header({ onToggleSidebar, title = "Dashboard" }: HeaderProps) {
                     variant="ghost"
                     size="icon"
                     onClick={onToggleSidebar}
-                    className="lg:hidden text-zinc-400 hover:text-white"
+                    className="lg:hidden text-muted-foreground hover:text-foreground"
                 >
                     <Menu className="h-6 w-6" />
                 </Button>
 
-                <h1 className="text-xl font-semibold text-white">{title}</h1>
+                <h1 className="text-xl font-semibold text-foreground">{title}</h1>
             </div>
 
             {/* Center - Search */}
@@ -60,8 +61,8 @@ export function Header({ onToggleSidebar, title = "Dashboard" }: HeaderProps) {
                 >
                     <Search className="h-5 w-5" />
                 </Button>
-
                 {/* Quick Add */}
+                <ThemeToggle className="mr-2" />
                 <Button size="sm" className="gap-2 bg-zark hover:bg-zark-dark">
                     <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">Nova Tarefa</span>

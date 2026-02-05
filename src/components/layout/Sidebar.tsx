@@ -60,7 +60,7 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
         <TooltipProvider delayDuration={0}>
             <aside
                 className={cn(
-                    "flex h-screen flex-col bg-[#09090b] border-r border-[#1f1f23] transition-all duration-300 relative group",
+                    "flex h-screen flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 relative group",
                     isCollapsed ? "w-20 px-3" : "w-[280px] px-4"
                 )}
             >
@@ -95,8 +95,8 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                         className={cn(
                                             "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 group/item",
                                             isActive
-                                                ? "bg-zinc-900 text-white shadow-inner shadow-black/50"
-                                                : "text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-100",
+                                                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                                                : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                                             isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
                                         )}
                                     >
@@ -118,7 +118,7 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                         <TooltipTrigger asChild>
                                             {LinkComponent}
                                         </TooltipTrigger>
-                                        <TooltipContent side="right" className="bg-zinc-900 text-white border-zinc-800">
+                                        <TooltipContent side="right" className="bg-popover text-popover-foreground border-border">
                                             {item.name}
                                         </TooltipContent>
                                     </Tooltip>
@@ -142,10 +142,10 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                         <Link
                                             href={`/dashboard/spaces/${space.id}`}
                                             className={cn(
-                                                "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-zinc-900/50 group/space",
+                                                "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space",
                                                 pathname === `/dashboard/spaces/${space.id}`
-                                                    ? "text-white bg-zinc-900"
-                                                    : "text-zinc-400",
+                                                    ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                                                    : "text-sidebar-foreground/60",
                                                 isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
                                             )}
                                         >
@@ -197,7 +197,7 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                     <Button
                                         variant="ghost"
                                         className={cn(
-                                            "w-full justify-start gap-2 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-2xl h-10 border border-dashed border-zinc-800/50 hover:border-zinc-700 transition-colors",
+                                            "w-full justify-start gap-2 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-2xl h-10 border border-dashed border-sidebar-border hover:border-sidebar-foreground/20 transition-colors",
                                             isCollapsed && "justify-center px-0 w-12 h-10 border-0"
                                         )}
                                     >
