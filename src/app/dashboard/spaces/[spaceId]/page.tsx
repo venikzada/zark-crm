@@ -22,25 +22,48 @@ import { KanbanBoard } from "@/components/kanban";
 import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
 import type { Column, Task } from "@/types";
 
-// Mock data - will be replaced with Supabase data
+// Real Supabase IDs from seed-demo-data.sql
 const mockColumns: Column[] = [
-    { id: "col1", list_id: "list1", name: "NEW", color: "#6B7280", position: 0, wip_limit: null, created_at: new Date().toISOString() },
-    { id: "col2", list_id: "list1", name: "WAITING", color: "#EAB308", position: 1, wip_limit: null, created_at: new Date().toISOString() },
-    { id: "col3", list_id: "list1", name: "APPROVED", color: "#3B82F6", position: 2, wip_limit: null, created_at: new Date().toISOString() },
-    { id: "col4", list_id: "list1", name: "ACTIVE", color: "#22C55E", position: 3, wip_limit: 2, created_at: new Date().toISOString() },
+    {
+        id: "c3d4e5f6-a789-4901-c234-56789abcdef0", // Real NEW column ID
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef", // Real list ID
+        name: "NEW",
+        color: "#6B7280",
+        position: 0,
+        wip_limit: null,
+        created_at: new Date().toISOString()
+    },
+    {
+        id: "d4e5f6a7-8901-4a12-d345-6789abcdef01", // Real WAITING column ID
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
+        name: "WAITING",
+        color: "#EAB308",
+        position: 1,
+        wip_limit: null,
+        created_at: new Date().toISOString()
+    },
+    {
+        id: "e5f6a789-0123-4b23-e456-789abcdef012", // Real APPROVED column ID
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
+        name: "APPROVED",
+        color: "#3B82F6",
+        position: 2,
+        wip_limit: null,
+        created_at: new Date().toISOString()
+    },
 ];
 
 const mockTasks: Task[] = [
     {
-        id: "task1",
-        column_id: "col1",
-        list_id: "list1",
+        id: "f6a78901-2345-4c34-f567-89abcdef0123", // Real Table B24 ID
+        column_id: "c3d4e5f6-a789-4901-c234-56789abcdef0", // NEW column
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef", // Real list ID
         title: "Table B24",
         description: "Room preparation needed for the VIP client meeting. Ensure all equipment is functioning properly.",
         priority: "urgent",
-        due_date: "2025-09-28",
+        due_date: "2025-09-27",
         assignee_id: "user1",
-        created_by: "user1",
+        created_by: "", // Empty string because no authenticated user
         position: 0,
         time_spent: 45,
         is_archived: false,
@@ -49,34 +72,34 @@ const mockTasks: Task[] = [
         assignee: { id: "user1", email: "kretov@email.com", full_name: "Kretov Mikhail Ilyich", avatar_url: null, role: "member", created_at: "", updated_at: "" }
     },
     {
-        id: "task2",
-        column_id: "col1",
-        list_id: "list1",
+        id: "89012345-6789-4e56-9012-abcdef012345", // Real Coworking V223 ID
+        column_id: "c3d4e5f6-a789-4901-c234-56789abcdef0", // NEW column
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
         title: "Coworking V223",
-        description: null,
+        description: "Configurar mesa de coworking",
         priority: "medium",
-        due_date: "2025-09-28",
+        due_date: "2025-09-27",
         assignee_id: "user2",
-        created_by: "user1",
+        created_by: "", // Empty string because no authenticated user
         position: 1,
-        time_spent: 0,
+        time_spent: 60,
         is_archived: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         assignee: { id: "user2", email: "nikitin@email.com", full_name: "Nikitin Vladislav", avatar_url: null, role: "member", created_at: "", updated_at: "" }
     },
     {
-        id: "task3",
-        column_id: "col2",
-        list_id: "list1",
+        id: "a7890123-4567-4d45-a678-9abcdef01234", // Real Family table 2 ID
+        column_id: "d4e5f6a7-8901-4a12-d345-6789abcdef01", // WAITING column
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
         title: "Family table 2",
-        description: "Room preparation",
+        description: "Reserva para família de 6 pessoas",
         priority: "high",
-        due_date: "2025-09-28",
+        due_date: "2025-09-27",
         assignee_id: "user3",
-        created_by: "user1",
+        created_by: "", // Empty string because no authenticated user
         position: 0,
-        time_spent: 120,
+        time_spent: 30,
         is_archived: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -84,8 +107,8 @@ const mockTasks: Task[] = [
     },
     {
         id: "task4",
-        column_id: "col2",
-        list_id: "list1",
+        column_id: "d4e5f6a7-8901-4a12-d345-6789abcdef01", // WAITING column (updated)
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
         title: "Table C23",
         description: null,
         priority: "urgent",
@@ -101,8 +124,8 @@ const mockTasks: Task[] = [
     },
     {
         id: "task5",
-        column_id: "col3",
-        list_id: "list1",
+        column_id: "e5f6a789-0123-4b23-e456-789abcdef012", // APPROVED column
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
         title: "VIP zone",
         description: "Training session",
         priority: "medium",
@@ -118,8 +141,8 @@ const mockTasks: Task[] = [
     },
     {
         id: "task6",
-        column_id: "col3",
-        list_id: "list1",
+        column_id: "e5f6a789-0123-4b23-e456-789abcdef012", // APPROVED column  
+        list_id: "b2c3d4e5-f6a7-4890-b123-456789abcdef",
         title: "Meeting room A228",
         description: "Problematic request",
         priority: "high",
@@ -132,23 +155,6 @@ const mockTasks: Task[] = [
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         assignee: { id: "user6", email: "spiridonov@email.com", full_name: "Spiridonov Mikhail", avatar_url: null, role: "member", created_at: "", updated_at: "" }
-    },
-    {
-        id: "task7",
-        column_id: "col4",
-        list_id: "list1",
-        title: "Coworking V223",
-        description: null,
-        priority: "low",
-        due_date: "2025-09-28",
-        assignee_id: "user7",
-        created_by: "user1",
-        position: 0,
-        time_spent: 90,
-        is_archived: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        assignee: { id: "user7", email: "vladislav@email.com", full_name: "Vladislav Nikitin", avatar_url: null, role: "member", created_at: "", updated_at: "" }
     },
 ];
 
