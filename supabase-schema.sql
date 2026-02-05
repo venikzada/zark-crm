@@ -445,6 +445,59 @@ CREATE INDEX IF NOT EXISTS idx_user_integrations_provider ON user_integrations(p
 CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON verification_codes(user_id);
 
 -- =============================================
+-- 15. SPACE INVITATIONS (Convites para Espaços)
+-- =============================================
+CREATE TABLE IF NOT EXISTS space_invitations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  space_id UUID REFERENCES spaces(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT DEFAULT 'member' CHECK (role IN ('admin', 'member', 'guest')),
+  invited_by UUID REFERENCES profiles(id),
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  accepted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE space_invitations ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Space admins can create invitations
+CREATE POLICY "Space admins can create invitations" ON space_invitations
+  FOR INSERT WITH CHECK (
+    space_id IN (
+      SELECT space_id FROM space_members 
+      WHERE user_id = auth.uid() AND role IN ('admin')
+    )
+    OR space_id IN (
+      SELECT id FROM spaces WHERE created_by = auth.uid()
+    )
+  );
+
+-- Policy: Anyone can view invitations by token (for acceptance)
+CREATE POLICY "Anyone can view invitations by token" ON space_invitations
+  FOR SELECT USING (true);
+
+-- Policy: Space admins can view their space invitations
+CREATE POLICY "Space admins can view space invitations" ON space_invitations
+  FOR SELECT USING (
+    space_id IN (
+      SELECT space_id FROM space_members 
+      WHERE user_id = auth.uid() AND role IN ('admin')
+    )
+    OR space_id IN (
+      SELECT id FROM spaces WHERE created_by = auth.uid()
+    )
+  );
+
+-- Policy: System can update invitations when accepted
+CREATE POLICY "System can update invitations" ON space_invitations
+  FOR UPDATE USING (true);
+
+CREATE INDEX IF NOT EXISTS idx_space_invitations_token ON space_invitations(token);
+CREATE INDEX IF NOT EXISTS idx_space_invitations_email ON space_invitations(email);
+CREATE INDEX IF NOT EXISTS idx_space_invitations_space ON space_invitations(space_id);
+
+-- =============================================
 -- Done!
 -- =============================================
 

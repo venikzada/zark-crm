@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 import { CreateSpaceDialog } from "@/components/spaces/CreateSpaceDialog";
+import { InviteMemberDialog } from "@/components/spaces/InviteMemberDialog";
 
 // Mock data for spaces
 const mockSpaces = [
@@ -205,6 +206,16 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                         {!isCollapsed && "Novo Espaço"}
                                     </Button>
                                 </CreateSpaceDialog>
+
+                                {/* Invite Members - Only show when not collapsed */}
+                                {!isCollapsed && mockSpaces.length > 0 && (
+                                    <div className="mt-2">
+                                        <InviteMemberDialog
+                                            spaceId={mockSpaces[0].id}
+                                            spaceName={mockSpaces[0].name}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
