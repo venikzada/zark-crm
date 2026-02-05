@@ -221,7 +221,7 @@ export default function SpacePage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" className="gap-2 text-white border-zinc-700 hover:bg-zinc-800">
                         <UserPlus className="h-4 w-4" />
                         New Client
                     </Button>
@@ -251,12 +251,17 @@ export default function SpacePage() {
                             )}
                         >
                             <span className={cn(
-                                "text-xs",
-                                day.isToday ? "text-white/80" : "text-muted-foreground"
+                                "text-xs font-medium",
+                                day.isToday ? "text-white/80" : "text-zinc-400"
                             )}>
                                 {day.dayName}
                             </span>
-                            <span className="text-lg font-semibold">{day.dayNum}</span>
+                            <span className={cn(
+                                "text-lg font-semibold",
+                                day.isToday ? "text-white" : "text-zinc-200"
+                            )}>
+                                {day.dayNum}
+                            </span>
                         </button>
                     ))}
                 </div>
