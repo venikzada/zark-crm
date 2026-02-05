@@ -65,7 +65,7 @@ const tasks = [
 
 export default function DashboardPage() {
     return (
-        <div className="min-h-screen bg-[#09090b] text-white p-6 lg:p-10 font-sans selection:bg-zark/30">
+        <div className="min-h-screen bg-background text-foreground p-6 lg:p-10 font-sans selection:bg-zark/30">
             {/* Header / Hero Section */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
                 <div className="flex items-center gap-4">
@@ -104,7 +104,7 @@ export default function DashboardPage() {
                 <div className="lg:col-span-7 space-y-6">
 
                     {/* Hero Stat Card */}
-                    <div className="relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-zinc-800 p-8 group transition-colors hover:border-zark/30">
+                    <div className="relative overflow-hidden rounded-[2rem] bg-card border border-border p-8 group transition-colors hover:border-zark/30">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Target className="w-48 h-48 text-zark rotate-12" />
                         </div>

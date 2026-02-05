@@ -15,7 +15,7 @@ export default function DashboardLayout({
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
-        <div className="flex h-screen bg-background dark">
+        <div className="flex h-screen bg-background">
             {/* Desktop Sidebar */}
             <div className="hidden lg:block">
                 <AppSidebar
@@ -26,7 +26,7 @@ export default function DashboardLayout({
 
             {/* Mobile Sidebar (Sheet) */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                <SheetContent side="left" className="p-0 border-r border-[#1f1f23] w-[280px] bg-[#09090b]">
+                <SheetContent side="left" className="p-0 border-r border-sidebar-border w-[280px] bg-sidebar">
                     <SheetTitle className="sr-only">Menu de Navegação</SheetTitle>
                     <AppSidebar
                         isCollapsed={false}
