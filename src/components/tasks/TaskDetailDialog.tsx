@@ -126,7 +126,7 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl h-[90vh] p-0 bg-[#09090b] border-[#1f1f23] overflow-hidden">
+            <DialogContent className="max-w-5xl w-[95vw] h-[calc(100vh-2rem)] p-0 bg-[#09090b] border-[#1f1f23] overflow-hidden flex flex-col">
                 {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b border-[#1f1f23] flex-shrink-0">
                     <div className="flex items-start justify-between gap-4">
@@ -168,9 +168,9 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                 </DialogHeader>
 
                 {/* Content */}
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 overflow-hidden min-h-0">
                     {/* Main Content */}
-                    <ScrollArea className="flex-1 px-6 py-6">
+                    <ScrollArea className="flex-1 px-6 py-6 h-full">
                         <div className="space-y-6 pr-4">
                             {/* Description */}
                             <div className="space-y-2">
@@ -335,94 +335,96 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                     </ScrollArea>
 
                     {/* Sidebar */}
-                    <div className="w-80 border-l border-[#1f1f23] bg-zinc-950/50 p-6 space-y-6 overflow-y-auto flex-shrink-0">
-                        {/* Assignee */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                <User className="h-3 w-3" /> Responsável
-                            </label>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
-                            >
-                                <Avatar className="h-6 w-6">
-                                    <AvatarImage src="https://github.com/shadcn.png" />
-                                    <AvatarFallback className="bg-zinc-800 text-white text-xs">
-                                        RK
-                                    </AvatarFallback>
-                                </Avatar>
-                                <span className="flex-1 text-left">
-                                    {task.assignee?.full_name || "Sem responsável"}
-                                </span>
-                                <ChevronDown className="h-4 w-4 text-zinc-500" />
-                            </Button>
-                        </div>
+                    <ScrollArea className="w-80 border-l border-[#1f1f23] bg-zinc-950/50 flex-shrink-0">
+                        <div className="p-6 space-y-6">
+                            {/* Assignee */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <User className="h-3 w-3" /> Responsável
+                                </label>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
+                                >
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarImage src="https://github.com/shadcn.png" />
+                                        <AvatarFallback className="bg-zinc-800 text-white text-xs">
+                                            RK
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="flex-1 text-left">
+                                        {task.assignee?.full_name || "Sem responsável"}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 text-zinc-500" />
+                                </Button>
+                            </div>
 
-                        {/* Due Date */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                <Calendar className="h-3 w-3" /> Data de Entrega
-                            </label>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
-                            >
-                                <Calendar className="h-4 w-4 text-zinc-500" />
-                                <span className="flex-1 text-left">
-                                    {task.due_date
-                                        ? new Date(task.due_date).toLocaleDateString("pt-BR")
-                                        : "Sem data"}
-                                </span>
-                                <ChevronDown className="h-4 w-4 text-zinc-500" />
-                            </Button>
-                        </div>
+                            {/* Due Date */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Calendar className="h-3 w-3" /> Data de Entrega
+                                </label>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
+                                >
+                                    <Calendar className="h-4 w-4 text-zinc-500" />
+                                    <span className="flex-1 text-left">
+                                        {task.due_date
+                                            ? new Date(task.due_date).toLocaleDateString("pt-BR")
+                                            : "Sem data"}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 text-zinc-500" />
+                                </Button>
+                            </div>
 
-                        {/* Time Spent */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                <Clock className="h-3 w-3" /> Tempo Gasto
-                            </label>
-                            <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
-                                <div className="text-2xl font-bold text-white">
-                                    {Math.floor(task.time_spent / 60)}h {task.time_spent % 60}m
+                            {/* Time Spent */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Clock className="h-3 w-3" /> Tempo Gasto
+                                </label>
+                                <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
+                                    <div className="text-2xl font-bold text-white">
+                                        {Math.floor(task.time_spent / 60)}h {task.time_spent % 60}m
+                                    </div>
+                                    <div className="text-xs text-zinc-500 mt-1">Total registrado</div>
                                 </div>
-                                <div className="text-xs text-zinc-500 mt-1">Total registrado</div>
+                            </div>
+
+                            <Separator className="bg-zinc-800" />
+
+                            {/* Attachments */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Paperclip className="h-3 w-3" /> Anexos (0)
+                                </label>
+                                <Button
+                                    variant="outline"
+                                    className="w-full bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-400 hover:text-white"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" /> Adicionar arquivo
+                                </Button>
+                            </div>
+
+                            <Separator className="bg-zinc-800" />
+
+                            {/* Actions */}
+                            <div className="space-y-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
+                                >
+                                    <Archive className="mr-2 h-4 w-4" /> Arquivar Tarefa
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start border-red-900/50 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Excluir Tarefa
+                                </Button>
                             </div>
                         </div>
-
-                        <Separator className="bg-zinc-800" />
-
-                        {/* Attachments */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                <Paperclip className="h-3 w-3" /> Anexos (0)
-                            </label>
-                            <Button
-                                variant="outline"
-                                className="w-full bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-400 hover:text-white"
-                            >
-                                <Plus className="mr-2 h-4 w-4" /> Adicionar arquivo
-                            </Button>
-                        </div>
-
-                        <Separator className="bg-zinc-800" />
-
-                        {/* Actions */}
-                        <div className="space-y-2">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
-                            >
-                                <Archive className="mr-2 h-4 w-4" /> Arquivar Tarefa
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start border-red-900/50 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" /> Excluir Tarefa
-                            </Button>
-                        </div>
-                    </div>
+                    </ScrollArea>
                 </div>
             </DialogContent>
         </Dialog>
