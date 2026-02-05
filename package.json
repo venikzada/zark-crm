@@ -1,12 +1,13 @@
 {
   "name": "zark-crm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "save": "node scripts/save.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
