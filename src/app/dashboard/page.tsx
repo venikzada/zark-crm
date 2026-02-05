@@ -74,23 +74,23 @@ export default function DashboardPage() {
                         <AvatarFallback>RK</AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                            Renan Kennedy <span className="text-zinc-500 font-normal">👋</span>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                            Renan Kennedy <span className="text-muted-foreground font-normal">👋</span>
                         </h1>
-                        <p className="text-zinc-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             Quarta-feira, 04 de Fevereiro • <span className="text-zark font-medium">Foco Total</span>
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="bg-zinc-900/50 rounded-full px-4 py-2 flex items-center gap-2 border border-zinc-800/50">
+                    <div className="bg-secondary/50 rounded-full px-4 py-2 flex items-center gap-2 border border-border">
                         <Zap className="w-4 h-4 text-zark fill-zark" />
-                        <span className="text-sm font-medium text-zinc-200">Mode Foco: Ativo</span>
+                        <span className="text-sm font-medium text-foreground">Mode Foco: Ativo</span>
                     </div>
                     <Button
                         variant="outline"
-                        className="rounded-full h-10 w-10 p-0 border-zinc-800 bg-black hover:bg-zinc-900 text-zinc-400 hover:text-white"
+                        className="rounded-full h-10 w-10 p-0 border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground"
                     >
                         <Calendar className="w-4 h-4" />
                     </Button>
@@ -112,14 +112,14 @@ export default function DashboardPage() {
                         <div className="relative z-10">
                             <div className="flex items-center gap-2 mb-6">
                                 <span className="flex h-2 w-2 rounded-full bg-zark animate-pulse" />
-                                <span className="text-sm font-medium text-zinc-400">Produtividade Semanal</span>
+                                <span className="text-sm font-medium text-muted-foreground">Produtividade Semanal</span>
                             </div>
 
                             <div className="flex items-end gap-4 mb-4">
-                                <span className="text-8xl font-black tracking-tighter text-white">
+                                <span className="text-8xl font-black tracking-tighter text-foreground">
                                     {stats.productivityScore}
                                 </span>
-                                <span className="text-xl font-medium text-zinc-500 mb-4">/100</span>
+                                <span className="text-xl font-medium text-muted-foreground mb-4">/100</span>
                             </div>
 
                             <div className="h-32 flex items-end gap-1 w-full max-w-sm mb-6">
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                                     <div
                                         key={i}
                                         className={cn(
-                                            "flex-1 bg-zinc-800 rounded-t-sm transition-all duration-500 group-hover:bg-zinc-700",
+                                            "flex-1 bg-secondary rounded-t-sm transition-all duration-500 group-hover:bg-secondary/80",
                                             i === 6 && "bg-zark"
                                         )}
                                         style={{ height: `${h}%` }}
@@ -135,8 +135,8 @@ export default function DashboardPage() {
                                 ))}
                             </div>
 
-                            <p className="text-zinc-400 max-w-md">
-                                Você está <span className="text-white font-bold">12% acima</span> da sua média.
+                            <p className="text-muted-foreground max-w-md">
+                                Você está <span className="text-foreground font-bold">12% acima</span> da sua média.
                                 Mantenha o ritmo para bater a meta mensal.
                             </p>
                         </div>
@@ -144,25 +144,25 @@ export default function DashboardPage() {
 
                     {/* Secondary Stats Grid */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="rounded-[1.5rem] bg-zinc-900/50 border border-zinc-800/50 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors">
+                        <div className="rounded-[1.5rem] bg-card/50 border border-border p-6 flex flex-col justify-between hover:bg-card transition-colors">
                             <div className="flex justify-between items-start">
                                 <CheckCircle2 className="w-6 h-6 text-green-500" />
-                                <span className="text-xs font-mono text-zinc-500">+4 hoje</span>
+                                <span className="text-xs font-mono text-muted-foreground">+4 hoje</span>
                             </div>
                             <div>
-                                <span className="text-3xl font-bold text-white block mt-4">{stats.completedTasks}</span>
-                                <span className="text-zinc-500 text-sm">Tarefas Concluídas</span>
+                                <span className="text-3xl font-bold text-foreground block mt-4">{stats.completedTasks}</span>
+                                <span className="text-muted-foreground text-sm">Tarefas Concluídas</span>
                             </div>
                         </div>
 
-                        <div className="rounded-[1.5rem] bg-zinc-900/50 border border-zinc-800/50 p-6 flex flex-col justify-between hover:bg-zinc-900 transition-colors">
+                        <div className="rounded-[1.5rem] bg-card/50 border border-border p-6 flex flex-col justify-between hover:bg-card transition-colors">
                             <div className="flex justify-between items-start">
                                 <Clock className="w-6 h-6 text-orange-400" />
-                                <span className="text-xs font-mono text-zinc-500">2h restantes</span>
+                                <span className="text-xs font-mono text-muted-foreground">2h restantes</span>
                             </div>
                             <div>
-                                <span className="text-3xl font-bold text-white block mt-4">{stats.weeklyFocus}%</span>
-                                <span className="text-zinc-500 text-sm">Meta de Foco</span>
+                                <span className="text-3xl font-bold text-foreground block mt-4">{stats.weeklyFocus}%</span>
+                                <span className="text-muted-foreground text-sm">Meta de Foco</span>
                             </div>
                         </div>
                     </div>
@@ -175,8 +175,8 @@ export default function DashboardPage() {
                             <TrendingUp className="w-5 h-5 text-zark" />
                             <h2 className="text-lg font-bold tracking-tight">Fluxo de Hoje</h2>
                         </div>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-zinc-800">
-                            <Filter className="w-4 h-4 text-zinc-400" />
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-accent">
+                            <Filter className="w-4 h-4 text-muted-foreground" />
                         </Button>
                     </div>
 
@@ -184,18 +184,18 @@ export default function DashboardPage() {
                         {tasks.map((task, i) => (
                             <div
                                 key={task.id}
-                                className="group relative flex items-center gap-4 p-4 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-zinc-900 hover:border-zinc-700 transition-all cursor-pointer"
+                                className="group relative flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:bg-accent/10 hover:border-accent transition-all cursor-pointer"
                             >
                                 {/* Priority Indicator */}
                                 <div className={cn(
                                     "absolute left-0 top-4 bottom-4 w-1 rounded-r-full transition-all group-hover:w-1.5",
-                                    task.priority === 'high' ? "bg-orange-500" : "bg-zinc-700"
+                                    task.priority === 'high' ? "bg-orange-500" : "bg-muted"
                                 )} />
 
                                 <div className="pl-2">
                                     <div className={cn(
                                         "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                                        task.status === 'done' ? "bg-zark border-zark" : "border-zinc-600 group-hover:border-zark"
+                                        task.status === 'done' ? "bg-zark border-zark" : "border-muted group-hover:border-zark"
                                     )}>
                                         {task.status === 'done' && <CheckCircle2 className="w-3 h-3 text-white" />}
                                     </div>
@@ -204,22 +204,22 @@ export default function DashboardPage() {
                                 <div className="flex-1 min-w-0">
                                     <h3 className={cn(
                                         "font-semibold text-sm truncate transition-colors",
-                                        task.status === 'done' ? "text-zinc-500 line-through" : "text-zinc-200 group-hover:text-white"
+                                        task.status === 'done' ? "text-muted-foreground line-through" : "text-foreground group-hover:text-primary"
                                     )}>
                                         {task.title}
                                     </h3>
-                                    <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
                                         {task.client}
                                     </p>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-1">
-                                    <span className="text-[10px] uppercase font-bold text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full border border-transparent">
                                         {task.due}
                                     </span>
                                     {task.avatar && (
-                                        <Avatar className="w-5 h-5 border border-zinc-900 mt-1">
+                                        <Avatar className="w-5 h-5 border border-background mt-1">
                                             <AvatarImage src={task.avatar} />
                                             <AvatarFallback>U</AvatarFallback>
                                         </Avatar>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2 bg-zinc-900 shadow-xl"
+                                    className="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2 bg-background shadow-xl"
                                 >
                                     <MoreHorizontal className="w-4 h-4" />
                                 </Button>
@@ -238,13 +238,13 @@ export default function DashboardPage() {
 
                         <Button
                             variant="ghost"
-                            className="w-full py-6 text-zinc-500 hover:text-white hover:bg-zinc-900 border border-dashed border-zinc-800 rounded-2xl group"
+                            className="w-full py-6 text-muted-foreground hover:text-foreground hover:bg-accent border border-dashed border-border rounded-2xl group"
                         >
                             <span className="group-hover:scale-105 transition-transform">+ Adicionar Nova Tarefa</span>
                         </Button>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
