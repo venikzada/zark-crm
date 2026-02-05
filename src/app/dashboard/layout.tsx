@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AppSidebar, Header } from "@/components/layout";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +27,7 @@ export default function DashboardLayout({
             {/* Mobile Sidebar (Sheet) */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetContent side="left" className="p-0 border-r border-[#1f1f23] w-[280px] bg-[#09090b]">
+                    <SheetTitle className="sr-only">Menu de Navegação</SheetTitle>
                     <AppSidebar
                         isCollapsed={false}
                         onToggle={() => setMobileOpen(false)} // Close on toggle/click

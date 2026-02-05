@@ -1,8 +1,32 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createBrowserClient } from "@/lib/supabase";
-import type { Task, Column, Space, Profile } from "@/types";
+import { createBrowserClient } from "@supabase/ssr";
+import type { Task, Column, Space, Profile, ChecklistItem, Comment } from "@/types";
+
+// Helper to create Supabase client for browser
+function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return document.cookie
+                        .split('; ')
+                        .find(row => row.startsWith(`${name}=`))
+                        ?.split('=')[1];
+                },
+                set(name: string, value: string, options) {
+                    document.cookie = `${name}=${value}; path=/; max-age=${options.maxAge}`;
+                },
+                remove(name: string) {
+                    document.cookie = `${name}=; path=/; max-age=0`;
+                },
+            },
+        }
+    );
+}
 
 // ============================================
 // useSpaces - Manage user's spaces
@@ -11,7 +35,7 @@ export function useSpaces() {
     const [spaces, setSpaces] = useState<Space[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createBrowserClient();
+    const supabase = createClient();
 
     const fetchSpaces = useCallback(async () => {
         try {
@@ -79,7 +103,7 @@ export function useTasks(listId: string | null) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createBrowserClient();
+    const supabase = createClient();
 
     const fetchTasks = useCallback(async () => {
         if (!listId) {
@@ -268,7 +292,7 @@ export function useColumns(listId: string | null) {
     const [columns, setColumns] = useState<Column[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createBrowserClient();
+    const supabase = createClient();
 
     const fetchColumns = useCallback(async () => {
         if (!listId) {
@@ -374,81 +398,12 @@ export function useColumns(listId: string | null) {
 }
 
 // ============================================
-// useComments - Manage task comments
-// ============================================
-export function useComments(taskId: string | null) {
-    const [comments, setComments] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const supabase = createBrowserClient();
-
-    const fetchComments = useCallback(async () => {
-        if (!taskId) {
-            setComments([]);
-            setLoading(false);
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from("comments")
-                .select(`
-          *,
-          user:profiles!comments_user_id_fkey(id, full_name, avatar_url)
-        `)
-                .eq("task_id", taskId)
-                .order("created_at", { ascending: true });
-
-            if (error) throw error;
-            setComments(data || []);
-        } catch (err) {
-            console.error("Error fetching comments:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [taskId, supabase]);
-
-    const addComment = async (content: string) => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("Not authenticated");
-
-            const { data, error } = await supabase
-                .from("comments")
-                .insert({
-                    task_id: taskId,
-                    user_id: user.id,
-                    content,
-                })
-                .select(`
-          *,
-          user:profiles!comments_user_id_fkey(id, full_name, avatar_url)
-        `)
-                .single();
-
-            if (error) throw error;
-            setComments((prev) => [...prev, data]);
-            return data;
-        } catch (err) {
-            console.error("Error adding comment:", err);
-            return null;
-        }
-    };
-
-    useEffect(() => {
-        fetchComments();
-    }, [fetchComments]);
-
-    return { comments, loading, addComment, refetch: fetchComments };
-}
-
-// ============================================
 // useAuth - Authentication state
 // ============================================
 export function useAuth() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const supabase = createBrowserClient();
+    const supabase = createClient();
 
     useEffect(() => {
         const getUser = async () => {
@@ -474,4 +429,207 @@ export function useAuth() {
     };
 
     return { user, loading, signOut };
+}
+
+// ============================================
+// useChecklistItems - Manage checklist items for a task
+// ============================================
+export function useChecklistItems(taskId: string | null) {
+    const [items, setItems] = useState<ChecklistItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
+
+    const fetchItems = useCallback(async () => {
+        if (!taskId) {
+            setItems([]);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            // Note: The schema uses `checklist_items` with `task_id` directly
+            const { data, error } = await supabase
+                .from("checklist_items")
+                .select("*")
+                .eq("task_id", taskId)
+                .order("position", { ascending: true });
+
+            if (error) throw error;
+            setItems(data || []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error fetching checklist items");
+        } finally {
+            setLoading(false);
+        }
+    }, [taskId, supabase]);
+
+    const createItem = async (content: string) => {
+        if (!taskId) return null;
+
+        try {
+            // Get max position
+            const { data: maxPosItem } = await supabase
+                .from("checklist_items")
+                .select("position")
+                .eq("task_id", taskId)
+                .order("position", { ascending: false })
+                .limit(1)
+                .single();
+
+            const newPosition = (maxPosItem?.position ?? -1) + 1;
+
+            const { data, error } = await supabase
+                .from("checklist_items")
+                .insert({
+                    task_id: taskId,
+                    content,
+                    is_completed: false,
+                    position: newPosition,
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            setItems((prev) => [...prev, data]);
+            return data;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error creating checklist item");
+            return null;
+        }
+    };
+
+    const toggleItem = async (itemId: string, isCompleted: boolean) => {
+        try {
+            const { data, error } = await supabase
+                .from("checklist_items")
+                .update({ is_completed: isCompleted })
+                .eq("id", itemId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            setItems((prev) => prev.map((item) => (item.id === itemId ? data : item)));
+            return data;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error updating checklist item");
+            return null;
+        }
+    };
+
+    const deleteItem = async (itemId: string) => {
+        try {
+            const { error } = await supabase
+                .from("checklist_items")
+                .delete()
+                .eq("id", itemId);
+
+            if (error) throw error;
+            setItems((prev) => prev.filter((item) => item.id !== itemId));
+            return true;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error deleting checklist item");
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        fetchItems();
+    }, [fetchItems]);
+
+    return { items, loading, error, refetch: fetchItems, createItem, toggleItem, deleteItem };
+}
+
+// ============================================
+// useComments - Manage comments for a task
+// ============================================
+export function useComments(taskId: string | null) {
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
+
+    const fetchComments = useCallback(async () => {
+        if (!taskId) {
+            setComments([]);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from("comments")
+                .select(`
+          *,
+          user:profiles(id, email, full_name, avatar_url)
+        `)
+                .eq("task_id", taskId)
+                .order("created_at", { ascending: true });
+
+            if (error) throw error;
+            setComments(data || []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error fetching comments");
+        } finally {
+            setLoading(false);
+        }
+    }, [taskId, supabase]);
+
+    const createComment = async (content: string) => {
+        if (!taskId) return null;
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                // Fallback for when auth is not set up - use a mock ID
+                console.warn("No authenticated user, using mock user ID");
+            }
+
+            const userId = user?.id || "00000000-0000-0000-0000-000000000000";
+
+            const { data, error } = await supabase
+                .from("comments")
+                .insert({
+                    task_id: taskId,
+                    user_id: userId,
+                    content,
+                })
+                .select(`
+          *,
+          user:profiles(id, email, full_name, avatar_url)
+        `)
+                .single();
+
+            if (error) throw error;
+            setComments((prev) => [...prev, data]);
+            return data;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error creating comment");
+            return null;
+        }
+    };
+
+    const deleteComment = async (commentId: string) => {
+        try {
+            const { error } = await supabase
+                .from("comments")
+                .delete()
+                .eq("id", commentId);
+
+            if (error) throw error;
+            setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+            return true;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error deleting comment");
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        fetchComments();
+    }, [fetchComments]);
+
+    return { comments, loading, error, refetch: fetchComments, createComment, deleteComment };
 }

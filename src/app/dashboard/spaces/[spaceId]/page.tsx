@@ -18,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { KanbanBoard, TaskDetailModal } from "@/components/kanban";
+import { KanbanBoard } from "@/components/kanban";
+import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
 import type { Column, Task } from "@/types";
 
 // Mock data - will be replaced with Supabase data
@@ -321,10 +322,13 @@ export default function SpacePage() {
             )}
 
             {/* Task Detail Modal */}
-            <TaskDetailModal
+            <TaskDetailDialog
                 task={selectedTask}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
+                open={isModalOpen}
+                onOpenChange={(open) => {
+                    setIsModalOpen(open);
+                    if (!open) setSelectedTask(null);
+                }}
             />
         </div>
     );

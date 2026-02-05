@@ -98,6 +98,7 @@ export function KanbanCard({ task, onClick, index = 0 }: KanbanCardProps) {
             {...attributes}
             {...listeners}
             onClick={onClick}
+            suppressHydrationWarning
             className={cn(
                 // Base styles
                 "group relative cursor-grab active:cursor-grabbing",
