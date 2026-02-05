@@ -37,6 +37,8 @@ import {
     Plus,
     Send,
     ChevronDown,
+    CheckCircle2,
+    Flag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types";
@@ -53,7 +55,15 @@ const priorityConfig = {
     low: { label: "Baixa", color: "text-emerald-400", bg: "bg-emerald-500/10" },
     medium: { label: "Média", color: "text-blue-400", bg: "bg-blue-500/10" },
     high: { label: "Alta", color: "text-amber-400", bg: "bg-amber-500/10" },
-    urgent: { label: "Urgente", color: "text-red-400", bg: "bg-red-500/10" },
+    urgent: { label: "Urgente", color: "text-red-400 bg-red-500/10 border-red-500/20" },
+};
+
+// Add Status Config
+const statusConfig = {
+    "todo": { label: "A Fazer", color: "text-zinc-400 bg-zinc-500/10 border-zinc-500/20" },
+    "in_progress": { label: "Em Progresso", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
+    "review": { label: "Em Revisão", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+    "done": { label: "Concluído", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
 };
 
 export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogProps) {
@@ -73,7 +83,10 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
 
     if (!task) return null;
 
-    const priority = priorityConfig[task.priority] || priorityConfig.medium;
+    const priority = priorityConfig[task.priority as keyof typeof priorityConfig] || priorityConfig.medium;
+    // Mock status for now since it's on the column, not the task directly in this simplistic view
+    // In a real app we'd derive this from column_id
+    const status = statusConfig["todo"]; // Defaulting to todo for UI demo purposes
 
     const handleToggleChecklistItem = async (id: string, currentStatus: boolean) => {
         const result = await toggleItem(id, !currentStatus);
@@ -126,22 +139,12 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl w-[95vw] h-[calc(100vh-2rem)] p-0 bg-[#09090b] border-[#1f1f23] overflow-hidden flex flex-col">
+            <DialogContent className="sm:max-w-7xl w-full h-[calc(100vh-2rem)] p-0 bg-[#09090b] border-[#1f1f23] overflow-hidden flex flex-col">
                 {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b border-[#1f1f23] flex-shrink-0">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs font-mono text-zinc-500">
-                                    #{task.id.slice(0, 7).toUpperCase()}
-                                </span>
-                                <Badge className={cn("text-xs", priority.bg, priority.color)}>
-                                    {priority.label}
-                                </Badge>
-                            </div>
-                            <DialogTitle className="text-2xl font-bold text-white pr-8">
-                                {task.title}
-                            </DialogTitle>
+
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -167,266 +170,349 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                     </div>
                 </DialogHeader>
 
-                {/* Content */}
-                <div className="flex flex-1 overflow-hidden min-h-0">
-                    {/* Main Content */}
-                    <ScrollArea className="flex-1 px-6 py-6 h-full">
-                        <div className="space-y-6 pr-4">
-                            {/* Description */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4" /> Descrição
-                                </label>
-                                <Textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    onBlur={handleDescriptionBlur}
-                                    placeholder="Adicione uma descrição detalhada..."
-                                    className="min-h-[120px] bg-zinc-900/50 border-zinc-800 text-white resize-none focus:border-zark/50"
-                                />
-                            </div>
-
-                            {/* Checklist */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-                                        <CheckSquare className="h-4 w-4" /> Checklist
-                                    </label>
-                                    <span className="text-xs text-zinc-500">
-                                        {completedCount}/{checklist.length} concluídos
+                {/* Content - Dual Pane Layout */}
+                <div className="flex flex-1 overflow-hidden min-h-0 bg-zinc-950">
+                    {/* Main Content - Left Pane */}
+                    <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
+                        <div className="max-w-3xl space-y-8">
+                            {/* Header Section in Main Content */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className={cn("text-xs font-mono uppercase tracking-wider bg-transparent border-zinc-800", priority.color)}>
+                                        {priority.label}
+                                    </Badge>
+                                    <span className="text-xs font-mono text-zinc-600">
+                                        #{task.id.slice(0, 7).toUpperCase()}
                                     </span>
                                 </div>
-
-                                {/* Progress bar */}
-                                <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-zark to-orange-600 transition-all duration-300"
-                                        style={{ width: `${progressPercentage}%` }}
-                                    />
-                                </div>
-
-                                {/* Checklist items */}
-                                <div className="space-y-2">
-                                    {checklist.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex items-start gap-3 p-3 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition-colors group"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={item.is_completed}
-                                                onChange={() => handleToggleChecklistItem(item.id, item.is_completed)}
-                                                className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-zark focus:ring-zark focus:ring-offset-0 cursor-pointer"
-                                            />
-                                            <span
-                                                className={cn(
-                                                    "flex-1 text-sm",
-                                                    item.is_completed
-                                                        ? "text-zinc-500 line-through"
-                                                        : "text-zinc-200"
-                                                )}
-                                            >
-                                                {item.content}
-                                            </span>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500 hover:text-red-400"
-                                                onClick={() => handleDeleteChecklistItem(item.id)}
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Add new item */}
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newChecklistItem}
-                                        onChange={(e) => setNewChecklistItem(e.target.value)}
-                                        placeholder="Adicionar item..."
-                                        className="bg-zinc-900/50 border-zinc-800 text-white focus:border-zark/50"
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                handleAddChecklistItem();
-                                            }
-                                        }}
-                                    />
-                                    <Button
-                                        onClick={handleAddChecklistItem}
-                                        className="bg-zark hover:bg-zark/90 text-white"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                <h2 className="text-3xl font-bold text-white leading-tight tracking-tight">
+                                    {task.title}
+                                </h2>
                             </div>
-
-                            {/* Comments */}
-                            <div className="space-y-4">
-                                <label className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-                                    <MessageSquare className="h-4 w-4" /> Comentários ({comments.length})
-                                </label>
-
-                                {/* Comment list */}
-                                <div className="space-y-4">
-                                    {comments.map((comment) => (
-                                        <div key={comment.id} className="flex gap-3">
-                                            <Avatar className="h-8 w-8 border-2 border-zinc-900">
-                                                <AvatarImage src={comment.user?.avatar_url || "https://github.com/shadcn.png"} />
-                                                <AvatarFallback className="bg-zinc-800 text-white text-xs">
-                                                    {comment.user?.full_name?.[0] || "?"}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-semibold text-white">
-                                                        {comment.user?.full_name || comment.user?.email || "Usuário"}
-                                                    </span>
-                                                    <span className="text-xs text-zinc-500">
-                                                        {new Date(comment.created_at).toLocaleString('pt-BR', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-zinc-300 bg-zinc-900/50 rounded-lg p-3 border border-zinc-800/50">
-                                                    {comment.content}
-                                                </p>
-                                            </div>
+                            <div className="space-y-6 pr-4">
+                                {/* Description */}
+                                <div className="space-y-4 group">
+                                    <label className="text-sm font-semibold text-zinc-500 flex items-center gap-2 uppercase tracking-wider text-[11px]">
+                                        <AlertCircle className="h-3.5 w-3.5" /> Descrição
+                                    </label>
+                                    <div className="relative">
+                                        <Textarea
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            onBlur={handleDescriptionBlur}
+                                            placeholder="Adicione uma descrição detalhada..."
+                                            className="min-h-[120px] bg-transparent border-zinc-800/50 hover:border-zinc-700 text-zinc-300 resize-none focus:border-zinc-600 focus:ring-0 p-0 text-base leading-relaxed placeholder:text-zinc-700 transition-colors"
+                                        />
+                                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-[10px] text-zinc-600 font-mono">Markdown supported</span>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
 
-                                {/* Add comment */}
-                                <div className="flex gap-2">
-                                    <Avatar className="h-8 w-8 border-2 border-zinc-900">
-                                        <AvatarImage src="https://github.com/shadcn.png" />
-                                        <AvatarFallback className="bg-zinc-800 text-white text-xs">
-                                            V
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 flex gap-2">
-                                        <Textarea
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            placeholder="Adicionar comentário..."
-                                            className="min-h-[80px] bg-zinc-900/50 border-zinc-800 text-white resize-none focus:border-zark/50"
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                                                    e.preventDefault();
-                                                    handleAddComment();
-                                                }
-                                            }}
+                                {/* Checklist */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-semibold text-zinc-500 flex items-center gap-2 uppercase tracking-wider text-[11px]">
+                                            <CheckSquare className="h-3.5 w-3.5" /> Checklist
+                                        </label>
+                                        <span className="text-[11px] font-mono text-zinc-500 bg-zinc-900/50 px-2 py-1 rounded border border-zinc-800">
+                                            {completedCount}/{checklist.length} concluídos
+                                        </span>
+                                    </div>
+
+                                    {/* Progress bar */}
+                                    <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-white transition-all duration-500 ease-out"
+                                            style={{ width: `${progressPercentage}%` }}
                                         />
+                                    </div>
+
+                                    {/* Checklist items */}
+                                    <div className="space-y-2">
+                                        {checklist.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="flex items-start gap-3 p-3 rounded-md bg-zinc-900/20 border border-transparent hover:border-zinc-800 hover:bg-zinc-900/40 transition-all group"
+                                            >
+                                                <div className="pt-0.5">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={item.is_completed}
+                                                        onChange={() => handleToggleChecklistItem(item.id, item.is_completed)}
+                                                        className="h-4 w-4 rounded border-zinc-700 bg-zinc-900/50 text-white focus:ring-0 focus:ring-offset-0 cursor-pointer transition-all border-2 checked:bg-white checked:border-white"
+                                                    />
+                                                </div>
+                                                <span
+                                                    className={cn(
+                                                        "flex-1 text-sm transition-colors",
+                                                        item.is_completed
+                                                            ? "text-zinc-600 line-through"
+                                                            : "text-zinc-300"
+                                                    )}
+                                                >
+                                                    {item.content}
+                                                </span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-600 hover:text-red-400 hover:bg-red-500/10"
+                                                    onClick={() => handleDeleteChecklistItem(item.id)}
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Add new item */}
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Input
+                                                value={newChecklistItem}
+                                                onChange={(e) => setNewChecklistItem(e.target.value)}
+                                                placeholder="Adicionar item..."
+                                                className="bg-zinc-900/50 border-zinc-800 text-zinc-300 focus:border-zinc-700 focus:ring-0"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault();
+                                                        handleAddChecklistItem();
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                         <Button
-                                            onClick={handleAddComment}
-                                            className="bg-zark hover:bg-zark/90 text-white h-10"
+                                            onClick={handleAddChecklistItem}
+                                            variant="outline"
+                                            size="icon"
+                                            className="bg-zinc-900 border-zinc-800 hover:bg-white hover:text-black transition-colors"
                                         >
-                                            <Send className="h-4 w-4" />
+                                            <Plus className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </ScrollArea>
 
-                    {/* Sidebar */}
-                    <ScrollArea className="w-80 border-l border-[#1f1f23] bg-zinc-950/50 flex-shrink-0">
-                        <div className="p-6 space-y-6">
-                            {/* Assignee */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                    <User className="h-3 w-3" /> Responsável
-                                </label>
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
-                                >
-                                    <Avatar className="h-6 w-6">
-                                        <AvatarImage src="https://github.com/shadcn.png" />
-                                        <AvatarFallback className="bg-zinc-800 text-white text-xs">
-                                            RK
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="flex-1 text-left">
-                                        {task.assignee?.full_name || "Sem responsável"}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 text-zinc-500" />
-                                </Button>
-                            </div>
+                                {/* Comments */}
+                                <div className="space-y-6 pt-6 border-t border-zinc-800/50">
+                                    <label className="text-sm font-semibold text-zinc-500 flex items-center gap-2 uppercase tracking-wider text-[11px]">
+                                        <MessageSquare className="h-3.5 w-3.5" /> Comentários ({comments.length})
+                                    </label>
 
-                            {/* Due Date */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                    <Calendar className="h-3 w-3" /> Data de Entrega
-                                </label>
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start gap-2 bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
-                                >
-                                    <Calendar className="h-4 w-4 text-zinc-500" />
-                                    <span className="flex-1 text-left">
-                                        {task.due_date
-                                            ? new Date(task.due_date).toLocaleDateString("pt-BR")
-                                            : "Sem data"}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 text-zinc-500" />
-                                </Button>
-                            </div>
-
-                            {/* Time Spent */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                    <Clock className="h-3 w-3" /> Tempo Gasto
-                                </label>
-                                <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
-                                    <div className="text-2xl font-bold text-white">
-                                        {Math.floor(task.time_spent / 60)}h {task.time_spent % 60}m
+                                    {/* Comment list */}
+                                    <div className="space-y-6">
+                                        {comments.map((comment) => (
+                                            <div key={comment.id} className="flex gap-4 group">
+                                                <Avatar className="h-8 w-8 border border-zinc-800 shrink-0">
+                                                    <AvatarImage src={comment.user?.avatar_url || "https://github.com/shadcn.png"} />
+                                                    <AvatarFallback className="bg-zinc-900 text-zinc-500 text-[10px]">
+                                                        {comment.user?.full_name?.[0] || "?"}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 space-y-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-medium text-zinc-200">
+                                                            {comment.user?.full_name || comment.user?.email || "Usuário"}
+                                                        </span>
+                                                        <span className="text-[10px] text-zinc-600">
+                                                            {new Date(comment.created_at).toLocaleString('pt-BR', {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors leading-relaxed">
+                                                        {comment.content}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="text-xs text-zinc-500 mt-1">Total registrado</div>
+
+                                    {/* Add comment */}
+                                    <div className="flex gap-3 pt-2">
+                                        <Avatar className="h-8 w-8 border border-zinc-800 shrink-0 opacity-50">
+                                            <AvatarImage src="https://github.com/shadcn.png" />
+                                            <AvatarFallback className="bg-zinc-900 text-zinc-500 text-[10px]">
+                                                RK
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 space-y-2">
+                                            <Textarea
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                placeholder="Escreva um comentário..."
+                                                className="min-h-[80px] bg-zinc-900/30 border-zinc-800 text-zinc-300 resize-none focus:border-zinc-700 focus:bg-zinc-900/50 focus:ring-0 text-sm"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                                        e.preventDefault();
+                                                        handleAddComment();
+                                                    }
+                                                }}
+                                            />
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    onClick={handleAddComment}
+                                                    size="sm"
+                                                    className="bg-white text-black hover:bg-zinc-200 transition-colors font-medium px-4"
+                                                    disabled={!newComment.trim()}
+                                                >
+                                                    Comentar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <Separator className="bg-zinc-800" />
-
-                            {/* Attachments */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                                    <Paperclip className="h-3 w-3" /> Anexos (0)
-                                </label>
-                                <Button
+                    {/* Right Pane - Sidebar */}
+                    <div className="w-80 border-l border-zinc-800 bg-zinc-950 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                        <div className="space-y-3">
+                            {/* Status Section */}
+                            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <CheckCircle2 className="h-3 w-3" /> Status
+                            </label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start gap-3 h-auto py-3 bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 text-zinc-300 transition-all group"
+                            >
+                                <Badge
                                     variant="outline"
-                                    className="w-full bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-400 hover:text-white"
+                                    className={cn("text-xs font-mono uppercase tracking-wider bg-transparent border-zinc-800", status.color)}
                                 >
-                                    <Plus className="mr-2 h-4 w-4" /> Adicionar arquivo
-                                </Button>
-                            </div>
+                                    {status.label}
+                                </Badge>
+                                <span className="flex-1 text-sm font-medium group-hover:text-white transition-colors">
+                                    {status.label}
+                                </span>
+                                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                            </Button>
+                        </div>
 
-                            <Separator className="bg-zinc-800" />
+                        <Separator className="bg-zinc-800/50" />
 
-                            {/* Actions */}
-                            <div className="space-y-2">
-                                <Button
+                        {/* Priority Section */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <Flag className="h-3 w-3" /> Prioridade
+                            </label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start gap-3 h-auto py-3 bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 text-zinc-300 transition-all group"
+                            >
+                                <Badge
                                     variant="outline"
-                                    className="w-full justify-start bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700 text-white"
+                                    className={cn("text-xs font-mono uppercase tracking-wider bg-transparent border-zinc-800", priority.color)}
                                 >
-                                    <Archive className="mr-2 h-4 w-4" /> Arquivar Tarefa
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start border-red-900/50 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Excluir Tarefa
-                                </Button>
+                                    {priority.label}
+                                </Badge>
+                                <span className="flex-1 text-sm font-medium group-hover:text-white transition-colors">
+                                    {priority.label}
+                                </span>
+                                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                            </Button>
+                        </div>
+
+                        <Separator className="bg-zinc-800/50" />
+
+                        {/* Assignee Section */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <User className="h-3 w-3" /> Responsável
+                            </label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start gap-3 h-auto py-3 bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 text-zinc-300 transition-all group"
+                            >
+                                <Avatar className="h-6 w-6 border border-zinc-700">
+                                    <AvatarImage src={task.assignee?.avatar_url || "https://github.com/shadcn.png"} />
+                                    <AvatarFallback className="bg-zinc-800 text-zinc-400 text-[10px]">
+                                        {task.assignee?.full_name?.[0] || "?"}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="flex-1 text-sm font-medium group-hover:text-white transition-colors">
+                                    {task.assignee?.full_name || "Sem responsável"}
+                                </span>
+                                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                            </Button>
+                        </div>
+
+                        <Separator className="bg-zinc-800/50" />
+
+                        {/* Due Date Section */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <Calendar className="h-3 w-3" /> Data de Entrega
+                            </label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start gap-3 h-auto py-2.5 bg-transparent border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/30 text-zinc-300 font-mono text-sm transition-all group"
+                            >
+                                <span className="flex-1 text-left">
+                                    {task.due_date
+                                        ? new Date(task.due_date).toLocaleDateString("pt-BR")
+                                        : "Sem data"}
+                                </span>
+                                <Calendar className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                            </Button>
+                        </div>
+
+                        {/* Time Spent Section */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <Clock className="h-3 w-3" /> Tempo Gasto
+                            </label>
+                            <div className="flex items-center gap-3 p-3 rounded-md border border-zinc-800 bg-zinc-900/30">
+                                <div className="h-8 w-8 rounded flex items-center justify-center bg-zinc-800/50 text-zinc-400">
+                                    <Clock className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-mono font-medium text-white">
+                                        {Math.floor(task.time_spent / 60)}h {task.time_spent % 60}m
+                                    </div>
+                                    <div className="text-[10px] text-zinc-500">Total registrado</div>
+                                </div>
                             </div>
                         </div>
-                    </ScrollArea>
+
+                        {/* Attachments Section */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Paperclip className="h-3 w-3" /> Anexos
+                                </label>
+                                <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">0</span>
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="w-full border-dashed border-zinc-700/50 bg-transparent hover:bg-zinc-800/30 hover:border-zinc-500 text-zinc-500 hover:text-zinc-300 h-20 flex flex-col gap-1 items-center justify-center transition-all"
+                            >
+                                <Plus className="h-4 w-4 mb-1" />
+                                <span className="text-xs">Adicionar arquivo</span>
+                            </Button>
+                        </div>
+
+                        {/* Danger Zone */}
+                        <div className="pt-8 mt-auto space-y-2">
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                            >
+                                <Archive className="h-4 w-4" /> Arquivar Tarefa
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-2 text-red-900/60 hover:text-red-400 hover:bg-red-950/20"
+                            >
+                                <Trash2 className="h-4 w-4" /> Excluir Tarefa
+                            </Button>
+                        </div>
+                    </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+            </DialogContent >
+        </Dialog >
     );
 }

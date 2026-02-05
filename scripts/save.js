@@ -10,7 +10,17 @@ const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 // Supports 'major', 'minor', 'patch' as arguments. Usage: npm run save -- minor
 const versionParts = packageJson.version.split('.').map(Number);
 const args = process.argv.slice(2);
-const type = args[0] || 'patch';
+
+let type = 'patch';
+let customMessage = '';
+
+// Check if first arg is a version type
+if (['major', 'minor', 'patch'].includes(args[0])) {
+    type = args[0];
+    customMessage = args.slice(1).join(' ');
+} else {
+    customMessage = args.join(' ');
+}
 
 if (type === 'major') {
     versionParts[0]++;
@@ -36,8 +46,9 @@ try {
     console.log('📦 Staging files...');
     execSync('git add .', { stdio: 'inherit' });
 
-    console.log(`💾 Committing as "V${newVersion}"...`);
-    execSync(`git commit -m "V${newVersion}"`, { stdio: 'inherit' });
+    const finalMessage = customMessage ? `V${newVersion} - ${customMessage}` : `V${newVersion}`;
+    console.log(`💾 Committing as "${finalMessage}"...`);
+    execSync(`git commit -m "${finalMessage}"`, { stdio: 'inherit' });
 
     // Optional: Create a tag
     console.log(`🏷️  Creating tag V${newVersion}...`);
