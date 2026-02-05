@@ -30,12 +30,12 @@ export function Header({ onToggleSidebar, title = "Dashboard" }: HeaderProps) {
                     variant="ghost"
                     size="icon"
                     onClick={onToggleSidebar}
-                    className="lg:hidden"
+                    className="lg:hidden text-zinc-400 hover:text-white"
                 >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-6 w-6" />
                 </Button>
 
-                <h1 className="text-xl font-semibold">{title}</h1>
+                <h1 className="text-xl font-semibold text-white">{title}</h1>
             </div>
 
             {/* Center - Search */}

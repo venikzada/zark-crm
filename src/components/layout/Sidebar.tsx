@@ -65,23 +65,18 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                 )}
             >
                 {/* Logo Section */}
-                <div className="flex h-24 items-center justify-center py-6">
-                    <Link href="/dashboard" className="flex items-center justify-center transition-all bg-transparent p-2 rounded-full hover:bg-white/5 group/logo">
-                        <div className="relative flex items-center justify-center">
-                            {/* Glow Effect */}
-                            <div className={cn(
-                                "absolute inset-0 bg-zark/20 blur-xl rounded-full opacity-50 group-hover/logo:opacity-100 transition-opacity",
-                                isCollapsed ? "w-8 h-8" : "w-16 h-16"
-                            )} />
+                <div className="flex h-32 items-center justify-center py-6">
+                    <Link href="/dashboard" className="flex items-center justify-center transition-all bg-transparent group/logo w-full">
+                        <div className={cn(
+                            "relative flex items-center justify-center transition-all duration-300",
+                            isCollapsed ? "w-10 h-10" : "w-[60%]"
+                        )}>
                             <Image
                                 src="/Zark-Laranja.png"
                                 alt="ZARK"
-                                width={64}
-                                height={64}
-                                className={cn(
-                                    "relative z-10 object-contain transition-all duration-300",
-                                    isCollapsed ? "w-8 h-8" : "w-14 h-14"
-                                )}
+                                width={180}
+                                height={80}
+                                className="object-contain w-full h-auto"
                             />
                         </div>
                     </Link>
