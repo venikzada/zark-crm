@@ -1,5 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,7 @@ interface CreateSpaceDialogProps {
 }
 
 export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
+    const router = useRouter();
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -63,18 +67,48 @@ export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
     };
 
     const handleCreate = async () => {
-        if (!name) return;
+        if (!name) {
+            toast.error("Nome do espaço é obrigatório");
+            return;
+        }
 
         setIsSubmitting(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const formData = new FormData();
+            formData.append("name", name);
+            if (description) formData.append("description", description);
+            formData.append("color", color);
+            if (logoFile) {
+                formData.append("logo", logoFile);
+            }
 
-        console.log("Creating space:", { name, description, color, logoFile });
+            const response = await fetch("/api/spaces", {
+                method: "POST",
+                body: formData,
+            });
 
-        // Reset and close
-        setIsSubmitting(false);
-        setOpen(false);
-        resetForm();
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Falha ao criar espaço");
+            }
+
+            const data = await response.json();
+
+            toast.success("Espaço criado com sucesso!");
+
+            // Reset and close
+            resetForm();
+            setOpen(false);
+
+            // Refresh to update list
+            router.refresh();
+
+        } catch (error) {
+            console.error("Error creating space:", error);
+            toast.error(error instanceof Error ? error.message : "Erro ao criar espaço");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const resetForm = () => {
