@@ -44,6 +44,23 @@ export async function POST(
             );
         }
 
+        // Self-healing: If user is owner but not a member/admin in the table, add them
+        if (isOwner && !membership) {
+            console.log("Self-healing: Adding owner to space_members");
+            const { error: memberError } = await supabase
+                .from("space_members")
+                .insert({
+                    space_id: spaceId,
+                    user_id: user.id,
+                    role: "admin",
+                });
+
+            if (memberError) {
+                console.error("Error auto-fixing membership:", memberError);
+                // Continue anyway as they are the owner
+            }
+        }
+
         // Generate unique token
         const token = randomBytes(32).toString("hex");
 

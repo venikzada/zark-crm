@@ -76,6 +76,21 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Add creator as admin member
+        const { error: memberError } = await supabase
+            .from('space_members')
+            .insert({
+                space_id: space.id,
+                user_id: user.id,
+                role: 'admin'
+            });
+
+        if (memberError) {
+            console.error('Error adding creator as member:', memberError);
+            // We don't fail the request here as the space was created, 
+            // but log the error. The user is still the owner.
+        }
+
         return NextResponse.json(space);
 
     } catch (err) {
