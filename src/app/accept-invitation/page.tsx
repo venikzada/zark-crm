@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,23 @@ import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AcceptInvitationPage() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-md p-8 text-center space-y-6">
+                <Suspense fallback={
+                    <>
+                        <Loader2 className="h-12 w-12 mx-auto text-zark animate-spin" />
+                        <h1 className="text-2xl font-bold">Carregando...</h1>
+                    </>
+                }>
+                    <AcceptInvitationForm />
+                </Suspense>
+            </Card>
+        </div>
+    );
+}
+
+function AcceptInvitationForm() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -76,41 +93,43 @@ export default function AcceptInvitationPage() {
         }
     };
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-md p-8 text-center space-y-6">
-                {status === "loading" && (
-                    <>
-                        <Loader2 className="h-12 w-12 mx-auto text-zark animate-spin" />
-                        <h1 className="text-2xl font-bold">Processando convite...</h1>
-                        <p className="text-muted-foreground">
-                            Aguarde enquanto validamos seu convite.
-                        </p>
-                    </>
-                )}
+    if (status === "loading") {
+        return (
+            <>
+                <Loader2 className="h-12 w-12 mx-auto text-zark animate-spin" />
+                <h1 className="text-2xl font-bold">Processando convite...</h1>
+                <p className="text-muted-foreground">
+                    Aguarde enquanto validamos seu convite.
+                </p>
+            </>
+        );
+    }
 
-                {status === "success" && (
-                    <>
-                        <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
-                        <h1 className="text-2xl font-bold text-green-500">Convite Aceito!</h1>
-                        <p className="text-muted-foreground">{message}</p>
-                        <p className="text-sm text-muted-foreground">
-                            Redirecionando para o espaço...
-                        </p>
-                    </>
-                )}
+    if (status === "success") {
+        return (
+            <>
+                <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
+                <h1 className="text-2xl font-bold text-green-500">Convite Aceito!</h1>
+                <p className="text-muted-foreground">{message}</p>
+                <p className="text-sm text-muted-foreground">
+                    Redirecionando para o espaço...
+                </p>
+            </>
+        );
+    }
 
-                {status === "error" && (
-                    <>
-                        <XCircle className="h-12 w-12 mx-auto text-destructive" />
-                        <h1 className="text-2xl font-bold text-destructive">Erro</h1>
-                        <p className="text-muted-foreground">{message}</p>
-                        <Button onClick={() => router.push("/dashboard")} className="mt-4">
-                            Voltar ao Dashboard
-                        </Button>
-                    </>
-                )}
-            </Card>
-        </div>
-    );
+    if (status === "error") {
+        return (
+            <>
+                <XCircle className="h-12 w-12 mx-auto text-destructive" />
+                <h1 className="text-2xl font-bold text-destructive">Erro</h1>
+                <p className="text-muted-foreground">{message}</p>
+                <Button onClick={() => router.push("/dashboard")} className="mt-4">
+                    Voltar ao Dashboard
+                </Button>
+            </>
+        );
+    }
+
+    return null;
 }
