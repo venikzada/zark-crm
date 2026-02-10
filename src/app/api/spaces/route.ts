@@ -8,16 +8,25 @@ export async function POST(request: NextRequest) {
         const { data: { user } } = await supabase.auth.getUser();
 
         // Admin client for storage operations to bypass RLS on upload
-        const supabaseAdmin = createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        let supabaseAdmin = null;
+
+        if (serviceRoleKey) {
+            supabaseAdmin = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                serviceRoleKey,
+                {
+                    auth: {
+                        autoRefreshToken: false,
+                        persistSession: false
+                    }
                 }
-            }
-        );
+            );
+        } else {
+            console.warn("Missing SUPABASE_SERVICE_ROLE_KEY. Uploads may fail if RLS requires admin privileges.");
+        }
+
+        // ... (user check) ...
 
         if (!user) {
             return NextResponse.json(
@@ -42,30 +51,37 @@ export async function POST(request: NextRequest) {
         let logoUrl = null;
 
         // Handle logo upload if exists
-        if (logo && logo.size > 0) {
-            const fileExt = logo.name.split('.').pop();
-            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        try {
+            if (logo && logo.size > 0) {
+                const fileExt = logo.name.split('.').pop();
+                const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-            const { error: uploadError } = await supabaseAdmin.storage
-                .from('workspace-images')
-                .upload(fileName, logo, {
-                    contentType: logo.type,
-                    upsert: true
-                });
+                // Use admin client if available, otherwise fall back to user client
+                const uploader = supabaseAdmin || supabase;
 
-            if (uploadError) {
-                console.error('Error uploading logo:', uploadError);
-                return NextResponse.json(
-                    { error: 'Failed to upload logo' },
-                    { status: 500 }
-                );
+                const { error: uploadError } = await uploader.storage
+                    .from('workspace-images')
+                    .upload(fileName, logo, {
+                        contentType: logo.type,
+                        upsert: true
+                    });
+
+                if (uploadError) {
+                    console.error('Error uploading logo:', uploadError);
+                    // Don't fail the entire request, just log and proceed without logo
+                    // or return a specific error if logo is critical (it's usually optional)
+                    console.warn('Continuing space creation without logo due to upload failure.');
+                } else {
+                    const { data: { publicUrl } } = uploader.storage
+                        .from('workspace-images')
+                        .getPublicUrl(fileName);
+
+                    logoUrl = publicUrl;
+                }
             }
-
-            const { data: { publicUrl } } = supabaseAdmin.storage
-                .from('workspace-images')
-                .getPublicUrl(fileName);
-
-            logoUrl = publicUrl;
+        } catch (uploadErr) {
+            console.error('Unexpected error during logo upload:', uploadErr);
+            // Proceed without logo
         }
 
         // Insert space into database

@@ -132,10 +132,10 @@ export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
             <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white">Criar Novo Espaço</DialogTitle>
-                    <DialogDescription className="sr-only">
-                        Preencha os dados abaixo para criar um novo espaço de trabalho.
-                    </DialogDescription>
                 </DialogHeader>
+                <DialogDescription className="sr-only">
+                    Preencha os dados abaixo para criar um novo espaço de trabalho.
+                </DialogDescription>
 
                 <div className="grid gap-6 py-4">
                     {/* Logo Upload Section */}
