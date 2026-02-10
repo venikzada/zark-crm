@@ -17,8 +17,9 @@ import {
     Bell,
     ChevronRight,
     Search,
-    CreditCard,
-    HelpCircle
+    HelpCircle,
+    MoreHorizontal,
+    Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,14 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +44,7 @@ import { Progress } from "@/components/ui/progress";
 
 import { CreateSpaceDialog } from "@/components/spaces/CreateSpaceDialog";
 import { InviteMemberDialog } from "@/components/spaces/InviteMemberDialog";
+import { SpaceSettingsDialog } from "@/components/spaces/SpaceSettingsDialog";
 
 // Mock data for spaces
 const mockSpaces = [
@@ -59,6 +69,7 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
     const [spaces, setSpaces] = useState<any[]>([]); // TODO: Add proper type
     const [isLoading, setIsLoading] = useState(true);
+    const [editingSpace, setEditingSpace] = useState<any>(null); // Space being edited
 
     // Fetch spaces on mount
     useEffect(() => {
@@ -176,58 +187,96 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                 ) : (
                                     spaces.map((space) => {
                                         const spaceUrl = `/dashboard/spaces/${space.id}`;
-                                        const SpaceLink = (
-                                            <Link
-                                                href={spaceUrl}
-                                                className={cn(
-                                                    "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space",
-                                                    pathname === spaceUrl
-                                                        ? "text-sidebar-accent-foreground bg-sidebar-accent"
-                                                        : "text-sidebar-foreground/60",
-                                                    isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
-                                                )}
-                                            >
-                                                {space.logo_url ? (
-                                                    <div className={cn(
-                                                        "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800",
-                                                        isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                    )}>
-                                                        <Image
-                                                            src={space.logo_url} // Correct field name
-                                                            alt={space.name}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <span
-                                                        className={cn(
-                                                            "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110",
-                                                            isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                        )}
-                                                        style={{ backgroundColor: (space.color || "#f56f10") + "15", color: space.color || "#f56f10" }}
-                                                    >
-                                                        {space.icon || (space.name ? space.name.charAt(0).toUpperCase() : "S")}
-                                                    </span>
-                                                )}
-
-                                                {!isCollapsed && (
-                                                    <span className="truncate flex-1">{space.name}</span>
-                                                )}
-                                            </Link>
-                                        );
-
-                                        if (!isCollapsed) return <div key={space.id}>{SpaceLink}</div>;
+                                        const isActiveSpace = pathname === spaceUrl;
 
                                         return (
-                                            <Tooltip key={space.id}>
-                                                <TooltipTrigger asChild>
-                                                    {SpaceLink}
-                                                </TooltipTrigger>
-                                                <TooltipContent side="right" className="bg-zinc-900 text-white border-zinc-800">
-                                                    {space.name}
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            <div key={space.id} className="relative group/space-container">
+                                                <Link
+                                                    href={spaceUrl}
+                                                    className={cn(
+                                                        "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space relative",
+                                                        isActiveSpace
+                                                            ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                                                            : "text-sidebar-foreground/60",
+                                                        isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
+                                                    )}
+                                                >
+                                                    {space.logo_url ? (
+                                                        <div className={cn(
+                                                            "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800 shrink-0",
+                                                            isCollapsed ? "h-6 w-6" : "h-8 w-8"
+                                                        )}>
+                                                            <Image
+                                                                src={space.logo_url}
+                                                                alt={space.name}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <span
+                                                            className={cn(
+                                                                "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110 shrink-0",
+                                                                isCollapsed ? "h-6 w-6" : "h-8 w-8"
+                                                            )}
+                                                            style={{ backgroundColor: (space.color || "#f56f10") + "15", color: space.color || "#f56f10" }}
+                                                        >
+                                                            {space.icon || (space.name ? space.name.charAt(0).toUpperCase() : "S")}
+                                                        </span>
+                                                    )}
+
+                                                    {!isCollapsed && (
+                                                        <span className="truncate flex-1">{space.name}</span>
+                                                    )}
+
+                                                    {/* Settings Trigger for Desktop (Hover) */}
+                                                    {!isCollapsed && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <div
+                                                                    role="button"
+                                                                    className={cn(
+                                                                        "opacity-0 group-hover/space-container:opacity-100 transition-opacity p-1 rounded-md hover:bg-zinc-800 absolute right-2",
+                                                                        "focus:opacity-100"
+                                                                    )}
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                    }}
+                                                                >
+                                                                    <MoreHorizontal className="h-4 w-4 text-zinc-400" />
+                                                                </div>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="w-56 bg-zinc-950 border-zinc-800 text-zinc-300" align="start" side="right">
+                                                                <DropdownMenuLabel className="text-xs text-zinc-500 uppercase">Obções de {space.name}</DropdownMenuLabel>
+                                                                <DropdownMenuSeparator className="bg-zinc-800" />
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setEditingSpace(space);
+                                                                    }}
+                                                                    className="cursor-pointer focus:bg-zinc-800 focus:text-white gap-2"
+                                                                >
+                                                                    <Settings className="w-4 h-4" /> Configurações do Espaço
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Trigger deletion via dialog for safety or direct?
+                                                                        // Let's open settings dialog as it has delete?
+                                                                        // Or add specific delete here?
+                                                                        // User wanted "clickup style", usually settings opens a modal.
+                                                                        setEditingSpace(space);
+                                                                    }}
+                                                                    className="cursor-pointer focus:bg-red-950/30 text-red-500 focus:text-red-400 gap-2"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" /> Excluir
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
+                                                </Link>
+                                            </div>
                                         );
                                     })
                                 )}
@@ -315,6 +364,15 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                         </div>
                     </DropdownMenuWrapper>
                 </div>
+
+                {/* Settings Dialog */}
+                {editingSpace && (
+                    <SpaceSettingsDialog
+                        space={editingSpace}
+                        open={!!editingSpace}
+                        onOpenChange={(open) => !open && setEditingSpace(null)}
+                    />
+                )}
             </aside>
         </TooltipProvider>
     );
