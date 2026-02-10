@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
     LayoutDashboard,
     FolderKanban,
@@ -56,6 +57,33 @@ interface SidebarProps {
 
 export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
+    const [spaces, setSpaces] = useState<any[]>([]); // TODO: Add proper type
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch spaces on mount
+    useEffect(() => {
+        const fetchSpaces = async () => {
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase
+                    .from('spaces')
+                    .select('id, name, color, logo_url')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error("Error fetching spaces:", error);
+                } else {
+                    setSpaces(data || []);
+                }
+            } catch (err) {
+                console.error("Failed to fetch spaces:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSpaces();
+    }, []);
 
     return (
         <TooltipProvider delayDuration={0}>
@@ -138,61 +166,71 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                             )}
 
                             <div className="space-y-1">
-                                {mockSpaces.map((space) => {
-                                    const SpaceLink = (
-                                        <Link
-                                            href={`/dashboard/spaces/${space.id}`}
-                                            className={cn(
-                                                "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space",
-                                                pathname === `/dashboard/spaces/${space.id}`
-                                                    ? "text-sidebar-accent-foreground bg-sidebar-accent"
-                                                    : "text-sidebar-foreground/60",
-                                                isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
-                                            )}
-                                        >
-                                            {space.logo ? (
-                                                <div className={cn(
-                                                    "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800",
-                                                    isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                )}>
-                                                    <Image
-                                                        src={space.logo}
-                                                        alt={space.name}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <span
-                                                    className={cn(
-                                                        "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110",
+                                {isLoading ? (
+                                    // Loading Skeleton
+                                    Array(3).fill(0).map((_, i) => (
+                                        <div key={i} className="px-4 py-2">
+                                            <div className="h-8 bg-zinc-800/50 rounded-lg animate-pulse" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    spaces.map((space) => {
+                                        const spaceUrl = `/dashboard/spaces/${space.id}`;
+                                        const SpaceLink = (
+                                            <Link
+                                                href={spaceUrl}
+                                                className={cn(
+                                                    "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space",
+                                                    pathname === spaceUrl
+                                                        ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                                                        : "text-sidebar-foreground/60",
+                                                    isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
+                                                )}
+                                            >
+                                                {space.logo_url ? (
+                                                    <div className={cn(
+                                                        "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800",
                                                         isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                    )}
-                                                    style={{ backgroundColor: space.color + "15", color: space.color }}
-                                                >
-                                                    {space.icon}
-                                                </span>
-                                            )}
+                                                    )}>
+                                                        <Image
+                                                            src={space.logo_url} // Correct field name
+                                                            alt={space.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <span
+                                                        className={cn(
+                                                            "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110",
+                                                            isCollapsed ? "h-6 w-6" : "h-8 w-8"
+                                                        )}
+                                                        style={{ backgroundColor: (space.color || "#f56f10") + "15", color: space.color || "#f56f10" }}
+                                                    >
+                                                        {space.icon || (space.name ? space.name.charAt(0).toUpperCase() : "S")}
+                                                    </span>
+                                                )}
 
-                                            {!isCollapsed && (
-                                                <span className="truncate flex-1">{space.name}</span>
-                                            )}
-                                        </Link>
-                                    );
+                                                {!isCollapsed && (
+                                                    <span className="truncate flex-1">{space.name}</span>
+                                                )}
+                                            </Link>
+                                        );
 
-                                    if (!isCollapsed) return <div key={space.id}>{SpaceLink}</div>;
+                                        if (!isCollapsed) return <div key={space.id}>{SpaceLink}</div>;
 
-                                    return (
-                                        <Tooltip key={space.id}>
-                                            <TooltipTrigger asChild>
-                                                {SpaceLink}
-                                            </TooltipTrigger>
-                                            <TooltipContent side="right" className="bg-zinc-900 text-white border-zinc-800">
-                                                {space.name}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    );
-                                })}
+                                        return (
+                                            <Tooltip key={space.id}>
+                                                <TooltipTrigger asChild>
+                                                    {SpaceLink}
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right" className="bg-zinc-900 text-white border-zinc-800">
+                                                    {space.name}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        );
+                                    })
+                                )}
 
                                 <CreateSpaceDialog>
                                     <Button
@@ -207,12 +245,12 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                     </Button>
                                 </CreateSpaceDialog>
 
-                                {/* Invite Members - Only show when not collapsed */}
-                                {!isCollapsed && mockSpaces.length > 0 && (
+                                {/* Invite Members - Only show when not collapsed AND we have spaces */}
+                                {!isCollapsed && spaces.length > 0 && (
                                     <div className="mt-2">
                                         <InviteMemberDialog
-                                            spaceId={mockSpaces[0].id}
-                                            spaceName={mockSpaces[0].name}
+                                            spaceId={spaces[0].id}
+                                            spaceName={spaces[0].name}
                                         />
                                     </div>
                                 )}
