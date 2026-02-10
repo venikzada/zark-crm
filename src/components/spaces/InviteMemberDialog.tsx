@@ -41,7 +41,7 @@ export function InviteMemberDialog({ spaceId, spaceName }: InviteMemberDialogPro
         setIsLoading(true);
 
         try {
-            const response = await fetch(`/api/spaces/${spaceId}/invite`, {
+            const response = await fetch(`/api/spaces/${spaceId}/invite?t=${Date.now()}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, role }),

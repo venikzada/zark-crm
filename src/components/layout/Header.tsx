@@ -73,7 +73,7 @@ export function Header({ onToggleSidebar, title = "Dashboard" }: HeaderProps) {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                             <Avatar className="h-9 w-9">
-                                <AvatarImage src="/avatars/user.png" alt="User" />
+                                <AvatarImage src="https://github.com/shadcn.png" alt="User" />
                                 <AvatarFallback className="bg-zark text-white font-semibold">
                                     RK
                                 </AvatarFallback>
