@@ -84,8 +84,11 @@ export async function POST(request: NextRequest) {
             // Proceed without logo
         }
 
+        // Use admin client if available to bypass RLS, otherwise fall back to user client
+        const dbClient = supabaseAdmin || supabase;
+
         // Insert space into database
-        const { data: space, error: dbError } = await supabase
+        const { data: space, error: dbError } = await dbClient
             .from('spaces')
             .insert({
                 name,
@@ -100,13 +103,18 @@ export async function POST(request: NextRequest) {
         if (dbError) {
             console.error('Database error:', dbError);
             return NextResponse.json(
-                { error: 'Failed to create space' },
+                {
+                    error: 'Failed to create space',
+                    details: dbError.message,
+                    code: dbError.code,
+                    hint: dbError.hint
+                },
                 { status: 500 }
             );
         }
 
         // Add creator as admin member
-        const { error: memberError } = await supabase
+        const { error: memberError } = await dbClient
             .from('space_members')
             .insert({
                 space_id: space.id,
@@ -122,10 +130,13 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(space);
 
-    } catch (err) {
+    } catch (err: any) {
         console.error('Server error:', err);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            {
+                error: 'Internal server error',
+                details: err.message
+            },
             { status: 500 }
         );
     }
