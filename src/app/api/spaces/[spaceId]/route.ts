@@ -174,10 +174,15 @@ export async function PATCH(
             .update(updates)
             .eq('id', spaceId)
             .select()
-            .single();
+            .maybeSingle();
 
         if (updateError) {
             return NextResponse.json({ error: updateError.message }, { status: 500 });
+        }
+
+        if (!updatedSpace) {
+            // accessible via SELECT but not UPDATE -> RLS or concurrent delete
+            return NextResponse.json({ error: 'Update failed. Check permissions.' }, { status: 403 });
         }
 
         return NextResponse.json(updatedSpace);
