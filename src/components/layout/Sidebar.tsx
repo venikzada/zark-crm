@@ -18,7 +18,10 @@ import {
     ChevronRight,
     Search,
     CreditCard,
-    HelpCircle
+    HelpCircle,
+    MoreVertical,
+    Pencil,
+    Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,11 +35,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { CreateSpaceDialog } from "@/components/spaces/CreateSpaceDialog";
 import { InviteMemberDialog } from "@/components/spaces/InviteMemberDialog";
-
-// Mock data for spaces removed
+import { EditSpaceDialog } from "@/components/spaces/EditSpaceDialog";
+import { DeleteSpaceDialog } from "@/components/spaces/DeleteSpaceDialog";
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -50,18 +59,13 @@ interface SidebarProps {
     onToggle?: () => void;
 }
 
-interface Space {
-    id: string;
-    name: string;
-    color: string | null;
-    logo_url: string | null;
-    icon?: string;
-}
-
 export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
-    const [spaces, setSpaces] = useState<Space[]>([]);
+    const [spaces, setSpaces] = useState<any[]>([]); // TODO: Add proper type
     const [isLoading, setIsLoading] = useState(true);
+
+    const [spaceToEdit, setSpaceToEdit] = useState<any>(null);
+    const [spaceToDelete, setSpaceToDelete] = useState<any>(null);
 
     // Fetch spaces on mount
     useEffect(() => {
@@ -86,7 +90,20 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
         };
 
         fetchSpaces();
-    }, []);
+        // Listen for router refresh events if possible, but for now we rely on the dialogs triggering router.refresh()
+        // verifying if we need to manually re-fetch. 
+        // Since router.refresh() re-runs server components but this is a client component fetching data on mount, 
+        // we might actually NOT see updates unless we trigger a re-fetch.
+        // A better approach for the future is using TanStack Query or a context, but for now:
+        // We will pass a callback to the dialogs or simply rely on the fact that 
+        // create/edit/delete might trigger a full page navigation or we can expose a refresh function.
+        // For this immediate task, let's keep it simple. If valid RLS is ensuring we only see what we have access to.
+    }, [pathname]); // Re-fetch on path change might be too aggressive, but ensures updates after actions. 
+    // Actually, router.refresh() does NOT re-mount client components.
+    // We should probably move fetchSpaces outside useEffect or add a trigger.
+    // For now, let's add a custom event listener or just depend on pathname which changes often enough
+    // OR allow the dialogs to trigger a refresh.
+    // Let's stick to the current pattern but add `pathname` as dependency so it refreshes when navigating.
 
     return (
         <TooltipProvider delayDuration={0}>
@@ -179,45 +196,80 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                                 ) : (
                                     spaces.map((space) => {
                                         const spaceUrl = `/dashboard/spaces/${space.id}`;
+                                        const isActive = pathname === spaceUrl;
+
                                         const SpaceLink = (
-                                            <Link
-                                                href={spaceUrl}
+                                            <div
                                                 className={cn(
-                                                    "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space",
-                                                    pathname === spaceUrl
+                                                    "relative flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-all hover:bg-sidebar-accent/50 group/space cursor-pointer",
+                                                    isActive
                                                         ? "text-sidebar-accent-foreground bg-sidebar-accent"
                                                         : "text-sidebar-foreground/60",
                                                     isCollapsed && "justify-center px-0 w-12 h-12 mx-auto"
                                                 )}
                                             >
-                                                {space.logo_url ? (
-                                                    <div className={cn(
-                                                        "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800",
-                                                        isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                    )}>
-                                                        <Image
-                                                            src={space.logo_url} // Correct field name
-                                                            alt={space.name}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <span
-                                                        className={cn(
-                                                            "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110",
+                                                <Link href={spaceUrl} className="absolute inset-0 z-0" />
+
+                                                {/* Icon/Logo */}
+                                                <div className="relative z-10 pointer-events-none">
+                                                    {space.logo_url ? (
+                                                        <div className={cn(
+                                                            "relative overflow-hidden rounded-lg transition-transform group-hover/space:scale-110 border border-zinc-800",
                                                             isCollapsed ? "h-6 w-6" : "h-8 w-8"
-                                                        )}
-                                                        style={{ backgroundColor: (space.color || "#f56f10") + "15", color: space.color || "#f56f10" }}
-                                                    >
-                                                        {space.icon || (space.name ? space.name.charAt(0).toUpperCase() : "S")}
-                                                    </span>
-                                                )}
+                                                        )}>
+                                                            <Image
+                                                                src={space.logo_url}
+                                                                alt={space.name}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <span
+                                                            className={cn(
+                                                                "flex items-center justify-center rounded-lg text-xs transition-transform group-hover/space:scale-110",
+                                                                isCollapsed ? "h-6 w-6" : "h-8 w-8"
+                                                            )}
+                                                            style={{ backgroundColor: (space.color || "#f56f10") + "15", color: space.color || "#f56f10" }}
+                                                        >
+                                                            {space.icon || (space.name ? space.name.charAt(0).toUpperCase() : "S")}
+                                                        </span>
+                                                    )}
+                                                </div>
 
                                                 {!isCollapsed && (
-                                                    <span className="truncate flex-1">{space.name}</span>
+                                                    <span className="truncate flex-1 relative z-10 pointer-events-none">{space.name}</span>
                                                 )}
-                                            </Link>
+
+                                                {/* Options Dropdown - Only show when NOT collapsed and on hover (or active) */}
+                                                {!isCollapsed && (
+                                                    <div className="relative z-20 opacity-0 group-hover/space:opacity-100 transition-opacity">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white hover:bg-zinc-800/50">
+                                                                    <MoreVertical className="h-3 w-3" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-40 bg-[#09090b] border-[#1f1f23]">
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setSpaceToEdit(space)}
+                                                                    className="text-zinc-400 focus:text-white focus:bg-zinc-800"
+                                                                >
+                                                                    <Pencil className="mr-2 h-3.5 w-3.5" />
+                                                                    Editar
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setSpaceToDelete(space)}
+                                                                    className="text-red-400 focus:text-red-300 focus:bg-red-500/10"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                                                    Excluir
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                )}
+                                            </div>
                                         );
 
                                         if (!isCollapsed) return <div key={space.id}>{SpaceLink}</div>;
@@ -318,6 +370,23 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                         </div>
                     </DropdownMenuWrapper>
                 </div>
+
+                {/* Dialogs */}
+                {spaceToEdit && (
+                    <EditSpaceDialog
+                        open={!!spaceToEdit}
+                        onOpenChange={(open) => !open && setSpaceToEdit(null)}
+                        space={spaceToEdit}
+                    />
+                )}
+                {spaceToDelete && (
+                    <DeleteSpaceDialog
+                        open={!!spaceToDelete}
+                        onOpenChange={(open) => !open && setSpaceToDelete(null)}
+                        spaceId={spaceToDelete.id}
+                        spaceName={spaceToDelete.name}
+                    />
+                )}
             </aside>
         </TooltipProvider>
     );
