@@ -23,14 +23,8 @@ export async function POST(request: NextRequest) {
                 }
             );
         } else {
-            console.error("CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY in environment variables.");
-            return NextResponse.json(
-                {
-                    error: 'Server Configuration Error',
-                    details: 'Missing SUPABASE_SERVICE_ROLE_KEY. Please add this to your Vercel project settings.'
-                },
-                { status: 500 }
-            );
+            // Warn but do not fail - we will rely on RLS for DB operations
+            console.warn("Missing SUPABASE_SERVICE_ROLE_KEY. Logo uploads may fail, but space creation should work via RLS.");
         }
 
         // ... (user check) ...
@@ -59,14 +53,11 @@ export async function POST(request: NextRequest) {
 
         // Handle logo upload if exists
         try {
-            if (logo && logo.size > 0) {
+            if (logo && logo.size > 0 && supabaseAdmin) {
                 const fileExt = logo.name.split('.').pop();
                 const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-                // Use admin client if available, otherwise fall back to user client
-                const uploader = supabaseAdmin || supabase;
-
-                const { error: uploadError } = await uploader.storage
+                const { error: uploadError } = await supabaseAdmin.storage
                     .from('workspace-images')
                     .upload(fileName, logo, {
                         contentType: logo.type,
@@ -75,11 +66,9 @@ export async function POST(request: NextRequest) {
 
                 if (uploadError) {
                     console.error('Error uploading logo:', uploadError);
-                    // Don't fail the entire request, just log and proceed without logo
-                    // or return a specific error if logo is critical (it's usually optional)
                     console.warn('Continuing space creation without logo due to upload failure.');
                 } else {
-                    const { data: { publicUrl } } = uploader.storage
+                    const { data: { publicUrl } } = supabaseAdmin.storage
                         .from('workspace-images')
                         .getPublicUrl(fileName);
 
@@ -91,11 +80,8 @@ export async function POST(request: NextRequest) {
             // Proceed without logo
         }
 
-        // Use admin client if available to bypass RLS, otherwise fall back to user client
-        const dbClient = supabaseAdmin || supabase;
-
-        // Insert space into database
-        const { data: space, error: dbError } = await dbClient
+        // Use standard client (user context) - relies on RLS policy "Users can create spaces"
+        const { data: space, error: dbError } = await supabase
             .from('spaces')
             .insert({
                 name,
@@ -121,7 +107,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Add creator as admin member
-        const { error: memberError } = await dbClient
+        const { error: memberError } = await supabase
             .from('space_members')
             .insert({
                 space_id: space.id,
@@ -131,7 +117,7 @@ export async function POST(request: NextRequest) {
 
         if (memberError) {
             console.error('Error adding creator as member:', memberError);
-            // We don't fail the request here as the space was created, 
+            // We don't fail the request here as the space was created,
             // but log the error. The user is still the owner.
         }
 
