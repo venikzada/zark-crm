@@ -27,6 +27,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,13 +62,13 @@ const mockComments = [
         id: "1",
         user: { name: "Renan Kennedy", avatar: null },
         content: "Precisamos finalizar a preparação da sala antes das 14h.",
-        createdAt: new Date(Date.now() - 1000 * 60 * 30),
+        createdAt: new Date("2024-02-10T10:00:00"),
     },
     {
         id: "2",
         user: { name: "Maria Silva", avatar: null },
         content: "Entendido! Já estou organizando os equipamentos.",
-        createdAt: new Date(Date.now() - 1000 * 60 * 15),
+        createdAt: new Date("2024-02-10T10:15:00"),
     },
 ];
 
@@ -153,6 +154,9 @@ export function TaskDetailModal({
                                         <span>{task.assignee?.full_name || "Sem responsável"}</span>
                                     </div>
                                     <DialogTitle className="text-xl font-bold">{task.title}</DialogTitle>
+                                    <DialogDescription className="sr-only">
+                                        Detalhes da tarefa {task.title}, comentários e checklist.
+                                    </DialogDescription>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={onClose}>
                                     <X className="h-4 w-4" />

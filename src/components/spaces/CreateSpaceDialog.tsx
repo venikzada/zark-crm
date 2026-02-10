@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useState, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,6 +132,9 @@ export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
             <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white">Criar Novo Espaço</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Preencha os dados abaixo para criar um novo espaço de trabalho.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-6 py-4">

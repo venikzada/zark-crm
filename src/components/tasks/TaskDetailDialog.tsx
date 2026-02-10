@@ -6,6 +6,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -142,6 +143,10 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
             <DialogContent className="sm:max-w-7xl w-full h-[calc(100vh-2rem)] p-0 bg-[#09090b] border-[#1f1f23] overflow-hidden flex flex-col">
                 {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b border-[#1f1f23] flex-shrink-0">
+                    <DialogTitle className="sr-only">Detalhes da Tarefa</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Visualização detalhada e edição da tarefa.
+                    </DialogDescription>
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
 
