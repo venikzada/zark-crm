@@ -23,7 +23,14 @@ export async function POST(request: NextRequest) {
                 }
             );
         } else {
-            console.warn("Missing SUPABASE_SERVICE_ROLE_KEY. Uploads may fail if RLS requires admin privileges.");
+            console.error("CRITICAL: Missing SUPABASE_SERVICE_ROLE_KEY in environment variables.");
+            return NextResponse.json(
+                {
+                    error: 'Server Configuration Error',
+                    details: 'Missing SUPABASE_SERVICE_ROLE_KEY. Please add this to your Vercel project settings.'
+                },
+                { status: 500 }
+            );
         }
 
         // ... (user check) ...

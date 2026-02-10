@@ -88,8 +88,9 @@ export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Falha ao criar espaço");
+                const errorData = await response.json();
+                const errorMessage = errorData.content || errorData.details || errorData.error || "Falha ao criar espaço";
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -129,11 +130,11 @@ export function CreateSpaceDialog({ children }: CreateSpaceDialogProps) {
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]">
+            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]" aria-describedby="create-space-desc">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white">Criar Novo Espaço</DialogTitle>
                 </DialogHeader>
-                <DialogDescription className="sr-only">
+                <DialogDescription id="create-space-desc" className="sr-only">
                     Preencha os dados abaixo para criar um novo espaço de trabalho.
                 </DialogDescription>
 
