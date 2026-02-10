@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
+
+        // Admin client for storage operations to bypass RLS on upload
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        );
 
         if (!user) {
             return NextResponse.json(
@@ -33,22 +46,22 @@ export async function POST(request: NextRequest) {
             const fileExt = logo.name.split('.').pop();
             const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-            const { error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabaseAdmin.storage
                 .from('workspace-images')
-                .upload(fileName, logo);
+                .upload(fileName, logo, {
+                    contentType: logo.type,
+                    upsert: true
+                });
 
             if (uploadError) {
                 console.error('Error uploading logo:', uploadError);
-                // Continue without logo if upload fails, or return error? 
-                // Let's log and continue for now, or maybe return error.
-                // Better to fail if upload was requested but failed.
                 return NextResponse.json(
                     { error: 'Failed to upload logo' },
                     { status: 500 }
                 );
             }
 
-            const { data: { publicUrl } } = supabase.storage
+            const { data: { publicUrl } } = supabaseAdmin.storage
                 .from('workspace-images')
                 .getPublicUrl(fileName);
 
