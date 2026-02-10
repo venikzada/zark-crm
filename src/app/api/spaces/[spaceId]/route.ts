@@ -5,9 +5,10 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 // DELETE: Delete a space
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { spaceId: string } }
+    props: { params: Promise<{ spaceId: string }> }
 ) {
     try {
+        const params = await props.params;
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -89,9 +90,10 @@ export async function DELETE(
 // PATCH: Update a space
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { spaceId: string } }
+    props: { params: Promise<{ spaceId: string }> }
 ) {
     try {
+        const params = await props.params;
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
