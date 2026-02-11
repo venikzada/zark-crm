@@ -351,7 +351,7 @@ export function AppSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
                         )}>
                             <div className="relative">
                                 <Avatar className={cn("border-2 border-zinc-900", isCollapsed ? "h-9 w-9" : "h-10 w-10")}>
-                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarImage src="https://ui-avatars.com/api/?name=Renan+Kennedy&background=18181b&color=fff" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#09090b] rounded-full" />
