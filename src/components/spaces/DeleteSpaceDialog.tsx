@@ -45,13 +45,13 @@ export function DeleteSpaceDialog({ open, onOpenChange, spaceId, spaceName }: De
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]">
+            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]" aria-describedby="delete-space-desc">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-red-500" />
                         Excluir Espaço
                     </DialogTitle>
-                    <DialogDescription className="text-zinc-400">
+                    <DialogDescription id="delete-space-desc" className="text-zinc-400">
                         Tem certeza que deseja excluir o espaço <strong className="text-white">{spaceName}</strong>?
                         <br /><br />
                         Essa ação é irreversível e excluirá todos os dados associados a este espaço.

@@ -133,10 +133,10 @@ export function EditSpaceDialog({ open, onOpenChange, space }: EditSpaceDialogPr
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]">
+            <DialogContent className="sm:max-w-[425px] bg-[#09090b] border-[#1f1f23]" aria-describedby="edit-space-desc">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white">Editar Espaço</DialogTitle>
-                    <DialogDescription className="sr-only">
+                    <DialogDescription id="edit-space-desc" className="sr-only">
                         Edite as informações do seu espaço.
                     </DialogDescription>
                 </DialogHeader>
